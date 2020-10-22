@@ -6,12 +6,14 @@
     <div v-if="account">
       You are logged in as {{account.username}}
     </div>
+    <div v-else>
+      You need to authenticate to access your SQL data
+    </div>
   </div>
 </template>
 
 <script>
 
-import { bus } from '@/main';
 export default {
   name: 'HelloWorld',
   data(){
@@ -20,10 +22,11 @@ export default {
     }
   },
   created(){
-    bus.$on('login', (account) => {
+    this.$emitter.on('login', (account) => {
       this.account = account;
+      console.log(this.account);
     }),
-    bus.$on('logout', () => {
+    this.$emitter.on('logout', () => {
         this.account = undefined;
     })
   }

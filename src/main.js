@@ -1,8 +1,13 @@
-import Vue from 'vue'
+import { createApp } from 'vue'
 import App from './App.vue'
+import Emitter from 'tiny-emitter'
 
-Vue.config.productionTip = false
-export const bus = new Vue();
-new Vue({
-  render: h => h(App),
-}).$mount('#app')
+var emitter = new Emitter();
+
+const app = createApp(App)
+app.config.globalProperties.$msalInstance = {};
+app.config.globalProperties.$emitter = emitter;
+app.mount('#app')
+
+
+

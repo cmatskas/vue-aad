@@ -25,7 +25,6 @@
 <script>
 
 import * as msal from "@azure/msal-browser";
-import { bus } from '@/main'
 
 const msalConfig = {
     auth: {
@@ -37,8 +36,6 @@ const msalConfig = {
     }
 };
 
-const msalInstance = new msal.PublicClientApplication(msalConfig);
-
 export default {
   data() {
     return {
@@ -48,20 +45,24 @@ export default {
       signin: 'https://microsoft.com',
     };
   },
-  async mounted() {
-    const accounts = msalInstance.getAllAccounts();
+  async created() {
+    this.$msalInstance = new msal.PublicClientApplication(msalConfig);
+  },
+  mounted() {
+    const accounts = this.$msalInstance.getAllAccounts();
     if(accounts.length == 0){
       return;
     }
     this.account = accounts[0];
+    this.$emitter.emit('login', this.account);
   },
   methods: {
     async SignIn() {
-      await msalInstance.loginPopup({})
+      await this.$msalInstance.loginPopup({})
         .then( () => {
-          const myAccounts = msalInstance.getAllAccounts();
+          const myAccounts = this.$msalInstance.getAllAccounts();
           this.account = myAccounts[0];
-          bus.$emit('login', this.account);
+          this.$emitter.emit('login', this.account);
           console.log(this.account);
         })
         .catch( (error) => {
@@ -69,9 +70,9 @@ export default {
         });
     },
     async SignOut(){
-      await msalInstance.logout({})
+      await this.$msalInstance.logout({})
         .then(() =>{
-          bus.$emit('logout', 'logging out');
+          this.$emitter.emit('logout', 'logging out');
         })
         .catch((error) => {
           console.error(error);
