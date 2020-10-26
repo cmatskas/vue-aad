@@ -15,7 +15,7 @@
           <a v-else @click="SignOut" target="_blank" rel="noopener noreferrer">
             <i class="fas fa-sign-out-alt fa-2x" aria-hidden="false"></i>
           </a>
-          <div v-if="account">{{account.username}}</div>
+          <div v-if="account">{{account.name}}</div>
         </div>
       </div>
     </div>
@@ -25,16 +25,6 @@
 <script>
 
 import * as msal from "@azure/msal-browser";
-
-const msalConfig = {
-    auth: {
-        clientId: '909e00f6-ca56-49a2-8dcd-fb447c531656',
-        authority: 'https://login.microsoftonline.com/b55f0c51-61a7-45c3-84df-33569b247796'
-    },
-    cache: {
-        cacheLocation: 'localStorage'
-    }
-};
 
 export default {
   data() {
@@ -46,7 +36,7 @@ export default {
     };
   },
   async created() {
-    this.$msalInstance = new msal.PublicClientApplication(msalConfig);
+    this.$msalInstance = new msal.PublicClientApplication(this.$store.state.msalConfig);
   },
   mounted() {
     const accounts = this.$msalInstance.getAllAccounts();
@@ -63,7 +53,6 @@ export default {
           const myAccounts = this.$msalInstance.getAllAccounts();
           this.account = myAccounts[0];
           this.$emitter.emit('login', this.account);
-          console.log(this.account);
         })
         .catch( (error) => {
           console.error(`error during authentication: ${error}`) 

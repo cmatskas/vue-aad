@@ -9,9 +9,12 @@
 <script>
 import HeaderBar from '@/components/header-bar';
 import HelloWorld from '@/components/HelloWorld';
+import store from '@/store';
+
 
 export default {
   name: 'App',
+  store,
   components: { HeaderBar, HelloWorld }
 }
 </script>
