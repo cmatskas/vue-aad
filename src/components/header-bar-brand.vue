@@ -6,7 +6,7 @@
       target="_blank"
       rel="noopener noreferrer"
     >
-      <img src="@/assets/azureAD.png"/>
+      <img src="@/assets/azureAD.png" />
     </a>
     <div class="navbar-item nav-home">
       <span class="tour">INTRO TO AZURE AD</span>

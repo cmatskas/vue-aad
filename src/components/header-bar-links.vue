@@ -9,13 +9,18 @@
           <a :href="twitter" target="_blank" rel="noopener noreferrer">
             <i class="fab fa-twitter fa-2x" aria-hidden="true"></i>
           </a>
-          <a v-if="!account" @click="SignIn" target="_blank" rel="noopener noreferrer">
+          <a
+            v-if="!account"
+            @click="SignIn"
+            target="_blank"
+            rel="noopener noreferrer"
+          >
             <i class="fas fa-sign-in-alt fa-2x" aria-hidden="false"></i>
           </a>
           <a v-else @click="SignOut" target="_blank" rel="noopener noreferrer">
             <i class="fas fa-sign-out-alt fa-2x" aria-hidden="false"></i>
           </a>
-          <div v-if="account">{{account.username}}</div>
+          <div v-if="account">{{ account.name }}</div>
         </div>
       </div>
     </div>
@@ -23,23 +28,10 @@
 </template>
 
 <script>
-
-import * as msal from "@azure/msal-browser";
-import { bus } from '@/main'
-
-const msalConfig = {
-    auth: {
-        clientId: '909e00f6-ca56-49a2-8dcd-fb447c531656',
-        authority: 'https://login.microsoftonline.com/b55f0c51-61a7-45c3-84df-33569b247796'
-    },
-    cache: {
-        cacheLocation: 'localStorage'
-    }
-};
-
-const msalInstance = new msal.PublicClientApplication(msalConfig);
+import { PublicClientApplication } from '@azure/msal-browser';
 
 export default {
+  name: 'HeaderBar',
   data() {
     return {
       account: undefined,
@@ -48,35 +40,42 @@ export default {
       signin: 'https://microsoft.com',
     };
   },
-  async mounted() {
-    const accounts = msalInstance.getAllAccounts();
-    if(accounts.length == 0){
+  async created() {
+    this.$msalInstance = new PublicClientApplication(
+      this.$store.state.msalConfig,
+    );
+  },
+  mounted() {
+    const accounts = this.$msalInstance.getAllAccounts();
+    if (accounts.length == 0) {
       return;
     }
     this.account = accounts[0];
+    this.$emitter.emit('login', this.account);
   },
   methods: {
     async SignIn() {
-      await msalInstance.loginPopup({})
-        .then( () => {
-          const myAccounts = msalInstance.getAllAccounts();
+      await this.$msalInstance
+        .loginPopup({})
+        .then(() => {
+          const myAccounts = this.$msalInstance.getAllAccounts();
           this.account = myAccounts[0];
-          bus.$emit('login', this.account);
-          console.log(this.account);
+          this.$emitter.emit('login', this.account);
         })
-        .catch( (error) => {
-          console.error(`error during authentication: ${error}`) 
+        .catch(error => {
+          console.error(`error during authentication: ${error}`);
         });
     },
-    async SignOut(){
-      await msalInstance.logout({})
-        .then(() =>{
-          bus.$emit('logout', 'logging out');
+    async SignOut() {
+      await this.$msalInstance
+        .logout({})
+        .then(() => {
+          this.$emitter.emit('logout', 'logging out');
         })
-        .catch((error) => {
+        .catch(error => {
           console.error(error);
         });
-    }
-  }
+    },
+  },
 };
 </script>
