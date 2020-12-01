@@ -22,12 +22,12 @@
     <div v-else>You need to authenticate to access your SQL data</div>
   </div>
 </template>
-1`
 
 <script>
 import customTokenCredential from '../CustomTokenProvider';
 import { BlobServiceClient } from '@azure/storage-blob';
 import { PublicClientApplication } from '@azure/msal-browser';
+import { mapMutations } from 'vuex';
 
 const storageAccountName = 'cmatskasbackup';
 
@@ -55,30 +55,13 @@ export default {
       });
   },
   methods: {
+    ...mapMutations(['setAccessToken']),
+
     async getAzureStorageData() {
-      let request = {
-        scopes: ['https://storage.azure.com/user_impersonation'],
-      };
-      const msalInstance = new PublicClientApplication(
-        this.$store.state.msalConfig,
-      );
-      var accessToken = '';
-      try {
-        let tokenResponse = await msalInstance.acquireTokenSilent(request);
-        console.log(`Access token aquired ${tokenResponse.accessToken}`);
-        accessToken = tokenResponse.accessToken;
-        this.accessToken = tokenResponse.accessToken;
-      } catch (error) {
-        console.error(
-          'Silent token acquisition failed. Using interactive mode',
-        );
-        let tokenResponse = await msalInstance.acquireTokenPopup(request);
-        console.log(
-          `Access token acquired via interactive auth ${tokenResponse.accessToken}`,
-        );
-        accessToken = tokenResponse.accessToken;
+      if(this.$store.state.accessToken == ''){
+        await this.getAccessToken();
       }
-      let tokenCredential = new customTokenCredential(accessToken);
+      let tokenCredential = new customTokenCredential(this.$store.state.accessToken);
       const blobClient = new BlobServiceClient(
         `https://${storageAccountName}.blob.core.windows.net`,
         tokenCredential,
@@ -96,6 +79,23 @@ export default {
         containerItem = await iter.next();
       }
     },
+    async getAccessToken(){
+      let request = {
+        scopes: ['https://storage.azure.com/user_impersonation'],
+      };
+      const msalInstance = new PublicClientApplication(
+        this.$store.state.msalConfig,
+      );
+      try {
+        let tokenResponse = await msalInstance.acquireTokenSilent(request);
+        this.$store.commit('setAccessToken', tokenResponse.accessToken);
+      } catch (error) {
+          console.error( 'Silent token acquisition failed. Using interactive mode' );
+          let tokenResponse = await msalInstance.acquireTokenPopup(request);
+          console.log(`Access token acquired via interactive auth ${tokenResponse.accessToken}`)
+          this.$store.commit('setAccessToken',tokenResponse.accessToken);
+      }
+    }
   },
 };
 </script>

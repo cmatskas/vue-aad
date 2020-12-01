@@ -10,6 +10,5 @@ const app = createApp(App);
 app.config.globalProperties.$msalInstance = {};
 // TODO: make the emitter a service
 app.config.globalProperties.$emitter = new Emitter();
-app.config.globalProperties.$accessToken = {};
 
 app.use(store).mount('#app');

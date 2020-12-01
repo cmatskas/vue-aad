@@ -13,8 +13,14 @@ const store = createStore({
           cacheLocation: 'localStorage',
         },
       },
+      accessToken:""
     };
   },
+  mutations :{
+    setAccessToken(state, token){
+      state.accessToken = token;
+    }
+  }
 });
 
 export default store;
